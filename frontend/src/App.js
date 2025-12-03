@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import BlogList from './components/BlogList';
 import BlogForm from './components/BlogForm';
 import API_BASE_URL from './config';
+import { apiCall } from './utils/api';
 import './App.css';
 
 class App extends Component {
@@ -19,16 +20,13 @@ class App extends Component {
   // Fetch all posts
   fetchPosts = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/posts`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch posts');
-      }
-      const data = await response.json();
+      console.log('API Base URL:', API_BASE_URL); // Debug log
+      const data = await apiCall('/api/posts');
       console.log('Posts fetched:', data); // Debug log
       this.setState({ posts: data });
     } catch (error) {
       console.error('Error fetching posts:', error);
-      alert('Error fetching posts: ' + error.message);
+      alert('Error fetching posts: ' + error.message + '\n\nCheck console for details.');
     }
   }
 
@@ -36,20 +34,10 @@ class App extends Component {
   handleCreatePost = async (postData) => {
     try {
       console.log('Submitting post data:', postData); // Debug log
-      const response = await fetch(`${API_BASE_URL}/api/posts`, {
+      const newPost = await apiCall('/api/posts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(postData),
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create post');
-      }
-      
-      const newPost = await response.json();
       console.log('Post created successfully:', newPost); // Debug log
       this.setState({
         posts: [newPost, ...this.state.posts],
@@ -65,20 +53,10 @@ class App extends Component {
   handleUpdatePost = async (id, postData) => {
     try {
       console.log('Updating post with data:', postData); // Debug log
-      const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
+      const updatedPost = await apiCall(`/api/posts/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(postData),
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update post');
-      }
-      
-      const updatedPost = await response.json();
       console.log('Post updated successfully:', updatedPost); // Debug log
       this.setState({
         posts: this.state.posts.map(post =>
@@ -96,7 +74,7 @@ class App extends Component {
   // Handle post deletion
   handleDeletePost = async (id) => {
     try {
-      await fetch(`${API_BASE_URL}/api/posts/${id}`, {
+      await apiCall(`/api/posts/${id}`, {
         method: 'DELETE',
       });
       this.setState({
@@ -105,6 +83,7 @@ class App extends Component {
       });
     } catch (error) {
       console.error('Error deleting post:', error);
+      alert('Error deleting post: ' + error.message);
     }
   }
 
