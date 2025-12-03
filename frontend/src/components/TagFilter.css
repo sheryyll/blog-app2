@@ -1,0 +1,222 @@
+.tag-filter {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.tag-filter:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filter-header h4 {
+  color: var(--headings);
+  font-weight: 700;
+  margin: 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-icon {
+  margin-right: 0.5rem;
+  color: var(--primary-caramel);
+}
+
+.clear-filters-btn svg {
+  margin-right: 0.25rem;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label svg {
+  color: var(--primary-caramel);
+}
+
+.calendar-icon {
+  color: var(--primary-caramel);
+}
+
+.clear-filters-btn {
+  border-color: var(--bright-coral);
+  color: var(--bright-coral);
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background-color: var(--bright-coral);
+  color: white;
+  border-color: var(--bright-coral);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.filter-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.filter-label {
+  color: var(--headings);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tag-dropdown {
+  width: 100%;
+  position: relative;
+  z-index: 1000;
+}
+
+.dropdown-toggle-custom {
+  width: 100%;
+  background-color: var(--card-bg);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.dropdown-toggle-custom:hover,
+.dropdown-toggle-custom:focus {
+  background-color: var(--card-bg);
+  border-color: var(--bright-teal);
+  color: var(--text);
+  box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.15);
+}
+
+.dropdown-toggle-custom::after {
+  margin-left: auto;
+}
+
+.dropdown-menu-custom {
+  width: 100%;
+  background-color: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-xl);
+  padding: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1050 !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  margin-top: 0.25rem !important;
+  transform: translateY(0) !important;
+}
+
+.dropdown-menu-custom .dropdown-item {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.dropdown-menu-custom .dropdown-item:hover {
+  background-color: var(--accent-sand);
+  color: var(--headings);
+}
+
+.dropdown-menu-custom .dropdown-item.active {
+  background: linear-gradient(135deg, var(--bright-teal) 0%, var(--bright-coral) 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.date-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.date-input {
+  width: 100%;
+  background-color: var(--card-bg);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  padding-right: 3rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.date-input:focus {
+  background-color: var(--card-bg);
+  border-color: var(--bright-teal);
+  color: var(--text);
+  box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.15);
+  outline: none;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 1.1rem;
+}
+
+.no-tags-message {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tag-filter {
+    padding: 1rem;
+  }
+
+  .filter-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .filter-controls {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
