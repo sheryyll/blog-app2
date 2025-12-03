@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Container } from 'react-bootstrap';
 import BlogList from './components/BlogList';
 import BlogForm from './components/BlogForm';
+import API_BASE_URL from './config';
 import './App.css';
 
 class App extends Component {
@@ -18,7 +19,7 @@ class App extends Component {
   // Fetch all posts
   fetchPosts = async () => {
     try {
-      const response = await fetch('/api/posts');
+      const response = await fetch(`${API_BASE_URL}/api/posts`);
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
       }
@@ -35,7 +36,7 @@ class App extends Component {
   handleCreatePost = async (postData) => {
     try {
       console.log('Submitting post data:', postData); // Debug log
-      const response = await fetch('/api/posts', {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ class App extends Component {
   handleUpdatePost = async (id, postData) => {
     try {
       console.log('Updating post with data:', postData); // Debug log
-      const response = await fetch(`/api/posts/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +96,7 @@ class App extends Component {
   // Handle post deletion
   handleDeletePost = async (id) => {
     try {
-      await fetch(`/api/posts/${id}`, {
+      await fetch(`${API_BASE_URL}/api/posts/${id}`, {
         method: 'DELETE',
       });
       this.setState({
