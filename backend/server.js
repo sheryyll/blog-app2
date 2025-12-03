@@ -36,7 +36,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/blog-app';
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error("MongoDB URI not set in .env");
+  process.exit(1);
+}
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -44,7 +49,6 @@ mongoose.connect(MONGODB_URI, {
 })
 .then(() => console.log('MongoDB connected successfully'))
 .catch((err) => console.error('MongoDB connection error:', err));
-
 // Blog Post Schema
 const blogPostSchema = new mongoose.Schema({
   title: {
