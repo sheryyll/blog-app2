@@ -10,6 +10,7 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
@@ -19,21 +20,24 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
     }
   };
 
-  // Memoize the filter change handler to prevent infinite loops
+  // Handle tag filter change (memoized)
   const handleFilterChange = useCallback((filtered) => {
     setFilteredPosts(filtered);
   }, []);
 
-  // Update filtered posts when posts change
+  // Update filtered posts when the main posts change
   useEffect(() => {
     setFilteredPosts(posts);
   }, [posts]);
 
   return (
     <div className="blog-list">
+      {/* Header */}
       <div className="blog-list-header">
         <h2>All Posts</h2>
+
         <div className="blog-list-actions">
+          {/* Grid / List View Toggle */}
           <ButtonGroup className="view-toggle-group">
             <Button
               variant={viewMode === 'grid' ? 'primary' : 'outline-primary'}
@@ -42,6 +46,7 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
             >
               <Grid3x3 size={16} /> Grid
             </Button>
+
             <Button
               variant={viewMode === 'list' ? 'primary' : 'outline-primary'}
               onClick={() => setViewMode('list')}
@@ -50,6 +55,8 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
               <List size={16} /> List
             </Button>
           </ButtonGroup>
+
+          {/* New Post Button */}
           <Button
             variant="primary"
             onClick={onNewPost}
@@ -57,20 +64,28 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
           >
             <Plus size={16} /> New Post
           </Button>
+
+          {/* Refresh Button */}
           <Button
             variant="outline-secondary"
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} /> {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            <RefreshCw
+              size={16}
+              className={isRefreshing ? 'spinning' : ''}
+            />{' '}
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>
       </div>
 
+      {/* Tag Filter */}
       {posts.length > 0 && (
         <TagFilter posts={posts} onFilterChange={handleFilterChange} />
       )}
 
+      {/* When posts exist but filter removes them */}
       {filteredPosts.length === 0 && posts.length > 0 ? (
         <Card className="empty-state-card">
           <Card.Body className="text-center">
@@ -79,6 +94,7 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
           </Card.Body>
         </Card>
       ) : filteredPosts.length === 0 ? (
+        // When no posts exist at all
         <Card className="empty-state-card">
           <Card.Body className="text-center">
             <h4>No posts yet</h4>
@@ -89,6 +105,7 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
           </Card.Body>
         </Card>
       ) : (
+        // Grid / List rendering
         <div className={viewMode === 'grid' ? 'blog-grid-view' : 'blog-list-view'}>
           {viewMode === 'grid' ? (
             <Row>
@@ -123,4 +140,3 @@ const BlogList = ({ posts, onEdit, onDelete, onNewPost, onRefresh }) => {
 };
 
 export default BlogList;
-

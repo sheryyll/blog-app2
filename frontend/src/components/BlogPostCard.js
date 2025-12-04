@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Card, Button, ButtonGroup } from 'react-bootstrap';
-import { Edit, Trash2, Calendar, User, Tag } from 'lucide-react';
+import { Edit, Trash2, Calendar, User, Tag, RefreshCw } from 'lucide-react';
 import './BlogPostCard.css';
 
 class BlogPostCard extends Component {
@@ -11,23 +11,28 @@ class BlogPostCard extends Component {
     };
   }
 
+  // Toggle full/truncated content
   handleToggleContent = () => {
     this.setState(prevState => ({
       showFullContent: !prevState.showFullContent
     }));
   }
 
+  // Call parent edit handler
   handleEdit = () => {
     this.props.onEdit(this.props.post);
   }
 
+  // Call parent delete handler with confirmation
   handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       this.props.onDelete(this.props.post._id);
     }
   }
 
+  // Format date for display
   formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -36,10 +41,10 @@ class BlogPostCard extends Component {
     });
   }
 
+  // Truncate content for preview
   truncateContent = (content, maxLength = 150) => {
-    if (content.length <= maxLength) {
-      return content;
-    }
+    if (!content) return '';
+    if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + '...';
   }
 
@@ -49,24 +54,26 @@ class BlogPostCard extends Component {
     const displayContent = showFullContent 
       ? post.content 
       : this.truncateContent(post.content);
-    
-    // Debug log for tags
-    if (post.tags) {
-      console.log(`Post "${post.title}" tags:`, post.tags, 'Type:', typeof post.tags, 'Is Array:', Array.isArray(post.tags));
-    }
 
     return (
       <Card className={`blog-post-card ${viewMode === 'list' ? 'list-view' : ''}`}>
         <Card.Body className={viewMode === 'list' ? 'list-view-body' : ''}>
           <div className={viewMode === 'list' ? 'blog-post-content-wrapper' : ''}>
+            {/* Title */}
             <Card.Title className="blog-post-title">{post.title}</Card.Title>
+
+            {/* Author */}
             <Card.Subtitle className="mb-2 text-muted blog-post-author">
               <User size={14} /> By {post.author}
             </Card.Subtitle>
+
+            {/* Content */}
             <Card.Text className="blog-post-content">
               {displayContent}
             </Card.Text>
-            {post.content.length > 150 && (
+
+            {/* Read More / Read Less */}
+            {post.content && post.content.length > 150 && (
               <Button
                 variant="link"
                 className="read-more-btn"
@@ -75,21 +82,33 @@ class BlogPostCard extends Component {
                 {showFullContent ? 'Read Less' : 'Read More'}
               </Button>
             )}
-          {post.tags && Array.isArray(post.tags) && post.tags.length > 0 && (
-            <div className="blog-post-tags">
-              <Tag size={14} className="tags-icon" />
-              {post.tags.map((tag, index) => (
-                <span key={index} className="post-tag">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
+
+            {/* Tags */}
+            {post.tags && Array.isArray(post.tags) && post.tags.length > 0 && (
+              <div className="blog-post-tags">
+                <Tag size={14} className="tags-icon" />
+                {post.tags.map((tag, index) => (
+                  <span key={index} className="post-tag">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="blog-post-footer">
-            <small className="text-muted blog-post-date">
-              <Calendar size={12} /> {this.formatDate(post.createdAt)}
-            </small>
+
+          {/* Footer with timestamps and actions */}
+          <div className="blog-post-footer d-flex justify-content-between align-items-center">
+            <div className="timestamps">
+              <small className="text-muted blog-post-date">
+                <Calendar size={12} /> Created: {this.formatDate(post.createdAt)}
+              </small>
+              {post.updatedAt && (
+                <small className="text-muted blog-post-date ms-2">
+                  <RefreshCw size={12} /> Updated: {this.formatDate(post.updatedAt)}
+                </small>
+              )}
+            </div>
+
             <ButtonGroup size="sm">
               <Button
                 variant="outline-primary"
@@ -114,4 +133,3 @@ class BlogPostCard extends Component {
 }
 
 export default BlogPostCard;
-

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Button, Alert } from 'react-bootstrap';
-import { Save, X, Tag, FileText, User } from 'lucide-react';
+import { Card, Form, Button } from 'react-bootstrap';
+import { Save, X, Tag, FileText, User, Clock } from 'lucide-react';
 import './BlogForm.css';
 
 const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
@@ -66,20 +66,14 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     
     try {
-      // Process tags - split by comma and trim
       const processedTags = formData.tags
         ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
         : [];
-      
-      console.log('Form tags input:', formData.tags); // Debug log
-      console.log('Processed tags array:', processedTags); // Debug log
       
       const submitData = {
         title: formData.title,
@@ -88,15 +82,15 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
         tags: processedTags
       };
       
-      console.log('Submitting data with tags:', submitData); // Debug log
       await onSubmit(submitData);
-      // Reset form after successful submission
+
       setFormData({
         title: '',
         content: '',
         author: '',
         tags: ''
       });
+
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -111,6 +105,8 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
       </Card.Header>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
+
+          {/* -------- Title -------- */}
           <Form.Group className="mb-3">
             <Form.Label>
               <FileText size={16} /> Title
@@ -128,6 +124,7 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
             </Form.Control.Feedback>
           </Form.Group>
 
+          {/* -------- Author -------- */}
           <Form.Group className="mb-3">
             <Form.Label>
               <User size={16} /> Author
@@ -145,6 +142,7 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
             </Form.Control.Feedback>
           </Form.Group>
 
+          {/* -------- Content -------- */}
           <Form.Group className="mb-3">
             <Form.Label>Content</Form.Label>
             <Form.Control
@@ -161,6 +159,7 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
             </Form.Control.Feedback>
           </Form.Group>
 
+          {/* -------- Tags -------- */}
           <Form.Group className="mb-3">
             <Form.Label>
               <Tag size={16} /> Tags
@@ -170,13 +169,41 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              placeholder="Enter tags separated by commas (e.g., react, javascript, tutorial)"
+              placeholder="react, javascript, tutorial"
             />
             <Form.Text className="text-muted">
               Separate multiple tags with commas
             </Form.Text>
           </Form.Group>
 
+          {/* -------- CreatedAt / UpdatedAt (Only in Edit Mode) -------- */}
+          {mode === 'edit' && post && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Label>
+                  <Clock size={16} /> Created At
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  value={new Date(post.createdAt).toLocaleString()}
+                  disabled
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>
+                  <Clock size={16} /> Last Updated
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  value={new Date(post.updatedAt).toLocaleString()}
+                  disabled
+                />
+              </Form.Group>
+            </>
+          )}
+
+          {/* -------- Buttons -------- */}
           <div className="blog-form-actions">
             <Button
               variant="secondary"
@@ -185,6 +212,7 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
             >
               <X size={16} /> Cancel
             </Button>
+
             <Button
               variant="primary"
               type="submit"
@@ -194,6 +222,7 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
               <Save size={16} /> {isSubmitting ? 'Submitting...' : (mode === 'edit' ? 'Update Post' : 'Create Post')}
             </Button>
           </div>
+
         </Form>
       </Card.Body>
     </Card>
@@ -201,4 +230,3 @@ const BlogForm = ({ post, mode, onSubmit, onCancel }) => {
 };
 
 export default BlogForm;
-

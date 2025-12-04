@@ -1,98 +1,66 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.use(express.json());
 
-// Middleware
+const allowedOrigins = [
+  "https://sheryyll-blog-app2.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001"
+];
+
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'https://sheryyll-blog-app2.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:3001'
-    ];
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin) return callback(null, true); // allow mobile/curl
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+      console.log("CORS blocked origin:", origin);
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error("MongoDB URI not set in .env");
+  console.error("❌ MongoDB URI missing in .env");
   process.exit(1);
 }
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected successfully'))
-.catch((err) => console.error('MongoDB connection error:', err));
-// Blog Post Schema
-const blogPostSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  author: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  tags: {
-    type: [String],
-    default: []
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+mongoose
+  .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-const BlogPost = mongoose.model('BlogPost', blogPostSchema);
+  const blogPostSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    content: { type: String, required: true },
+    author: { type: String, required: true, trim: true },
+    tags: { type: [String], default: [] },
+  },
+  { timestamps: true }
+);
 
-// Routes
+const BlogPost = mongoose.model("BlogPost", blogPostSchema);
 
-// GET all blog posts (with optional tag filter)
-app.get('/api/posts', async (req, res) => {
+
+// GET all posts (optional tag filter)
+app.get("/api/posts", async (req, res) => {
   try {
     const { tag } = req.query;
-    let query = {};
-    
-    if (tag) {
-      query.tags = { $in: [tag] };
-    }
-    
+    const query = tag ? { tags: { $in: [tag] } } : {};
+
     const posts = await BlogPost.find(query).sort({ createdAt: -1 });
     res.json(posts);
   } catch (error) {
@@ -100,147 +68,85 @@ app.get('/api/posts', async (req, res) => {
   }
 });
 
-// GET single blog post by ID
-app.get('/api/posts/:id', async (req, res) => {
+// GET single post
+app.get("/api/posts/:id", async (req, res) => {
   try {
     const post = await BlogPost.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
     res.json(post);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// CREATE new blog post
-app.post('/api/posts', async (req, res) => {
+// CREATE post
+app.post("/api/posts", async (req, res) => {
   try {
     const { title, content, author, tags } = req.body;
-    
+
     if (!title || !content || !author) {
-      return res.status(400).json({ error: 'Title, content, and author are required' });
+      return res.status(400).json({ error: "Required fields missing" });
     }
 
-    // Process tags - handle both array and string formats
     let processedTags = [];
     if (tags) {
-      if (Array.isArray(tags)) {
-        // Already an array, just trim and filter
-        processedTags = tags
-          .map(tag => String(tag).trim())
-          .filter(tag => tag.length > 0);
-      } else if (typeof tags === 'string') {
-        // String format, split by comma
-        processedTags = tags
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(tag => tag.length > 0);
-      }
+      processedTags = Array.isArray(tags)
+        ? tags.map((t) => t.trim()).filter(Boolean)
+        : tags.split(",").map((t) => t.trim()).filter(Boolean);
     }
-    console.log('Processed tags for create:', processedTags); // Debug log
 
-    const newPost = new BlogPost({
-      title,
-      content,
-      author,
-      tags: processedTags,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
+    const newPost = new BlogPost({ title, content, author, tags: processedTags });
+    const saved = await newPost.save();
 
-    const savedPost = await newPost.save();
-    console.log('Post created with tags:', savedPost.tags); // Debug log
-    res.status(201).json(savedPost);
+    res.status(201).json(saved);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// UPDATE blog post
-app.put('/api/posts/:id', async (req, res) => {
+// UPDATE post
+app.put("/api/posts/:id", async (req, res) => {
   try {
     const { title, content, author, tags } = req.body;
-    
-    // Process tags - handle both array and string formats
+
     let processedTags = [];
     if (tags) {
-      if (Array.isArray(tags)) {
-        // Already an array, just trim and filter
-        processedTags = tags
-          .map(tag => String(tag).trim())
-          .filter(tag => tag.length > 0);
-      } else if (typeof tags === 'string') {
-        // String format, split by comma
-        processedTags = tags
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(tag => tag.length > 0);
-      }
+      processedTags = Array.isArray(tags)
+        ? tags.map((t) => t.trim()).filter(Boolean)
+        : tags.split(",").map((t) => t.trim()).filter(Boolean);
     }
-    console.log('Processed tags for update:', processedTags); // Debug log
-    
-    const updatedPost = await BlogPost.findByIdAndUpdate(
+
+    const updated = await BlogPost.findByIdAndUpdate(
       req.params.id,
-      {
-        title,
-        content,
-        author,
-        tags: processedTags,
-        updatedAt: new Date()
-      },
+      { title, content, author, tags: processedTags },
       { new: true, runValidators: true }
     );
 
-    if (!updatedPost) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
+    if (!updated) return res.status(404).json({ error: "Post not found" });
 
-    console.log('Post updated with tags:', updatedPost.tags); // Debug log
-    res.json(updatedPost);
+    res.json(updated);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// DELETE blog post
-app.delete('/api/posts/:id', async (req, res) => {
+// DELETE post
+app.delete("/api/posts/:id", async (req, res) => {
   try {
-    const deletedPost = await BlogPost.findByIdAndDelete(req.params.id);
-    
-    if (!deletedPost) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
+    const deleted = await BlogPost.findByIdAndDelete(req.params.id);
 
-    res.json({ message: 'Post deleted successfully', post: deletedPost });
+    if (!deleted) return res.status(404).json({ error: "Post not found" });
+
+    res.json({ message: "Deleted successfully", post: deleted });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    origin: req.headers.origin || 'no origin'
-  });
-});
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Blog API Server',
-    endpoints: {
-      health: '/api/health',
-      posts: '/api/posts',
-      postById: '/api/posts/:id'
-    }
-  });
-});
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
-

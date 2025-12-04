@@ -7,7 +7,7 @@ const TagFilter = ({ posts, onFilterChange }) => {
   const [selectedTag, setSelectedTag] = useState('All Tags');
   const [selectedDate, setSelectedDate] = useState('');
 
-  // Extract all unique tags from posts using useMemo to prevent recalculation
+  // Extract all unique tags from posts
   const allTags = useMemo(() => {
     const tagSet = new Set();
     posts.forEach(post => {
@@ -24,21 +24,20 @@ const TagFilter = ({ posts, onFilterChange }) => {
     return tagsArray;
   }, [posts]);
 
-  // Filter posts based on selected tag and date
+  // Filter posts whenever selectedTag, selectedDate, or posts change
   useEffect(() => {
-    let filtered = [...posts]; // Create a copy to avoid mutation
+    let filtered = [...posts]; // Clone array to avoid mutating original
 
+    // Filter by tag
     if (selectedTag && selectedTag !== 'All Tags') {
       filtered = filtered.filter(post => {
-        const hasTag = post.tags && 
-          Array.isArray(post.tags) && 
-          post.tags.some(tag => String(tag).trim() === selectedTag.trim());
-        console.log(`Post "${post.title}" has tag "${selectedTag}":`, hasTag, 'Tags:', post.tags); // Debug log
-        return hasTag;
+        return post.tags &&
+               Array.isArray(post.tags) &&
+               post.tags.some(tag => String(tag).trim() === selectedTag.trim());
       });
-      console.log('Filtered by tag:', selectedTag, 'Result count:', filtered.length); // Debug log
     }
 
+    // Filter by date
     if (selectedDate) {
       const filterDate = new Date(selectedDate);
       filtered = filtered.filter(post => {
@@ -47,39 +46,31 @@ const TagFilter = ({ posts, onFilterChange }) => {
       });
     }
 
-    console.log('Final filtered posts:', filtered.length); // Debug log
     onFilterChange(filtered);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTag, selectedDate, posts]); // Removed onFilterChange from deps
+  }, [selectedTag, selectedDate, posts]);
 
+  // Handle tag selection
   const handleTagSelect = (tag) => {
     setSelectedTag(tag);
   };
 
+  // Handle date input change
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
   };
 
+  // Clear all filters
   const handleClearFilters = () => {
     setSelectedTag('All Tags');
     setSelectedDate('');
   };
 
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
-
   return (
     <div className="tag-filter">
-      <div className="filter-header">
+      <div className="filter-header d-flex justify-content-between align-items-center">
         <h4>
-          <Search size={18} className="filter-icon" />
-          Filter Articles
+          <Search size={18} className="filter-icon" /> Filter Articles
         </h4>
         {(selectedTag !== 'All Tags' || selectedDate) && (
           <Button
@@ -94,6 +85,7 @@ const TagFilter = ({ posts, onFilterChange }) => {
       </div>
 
       <div className="filter-controls">
+        {/* Tag Filter */}
         <div className="filter-group">
           <label className="filter-label">
             <TagIcon size={16} /> Filter by Tag
@@ -122,6 +114,7 @@ const TagFilter = ({ posts, onFilterChange }) => {
           </Dropdown>
         </div>
 
+        {/* Date Filter */}
         <div className="filter-group">
           <label className="filter-label">
             <Calendar size={16} /> Filter by Date
@@ -132,19 +125,20 @@ const TagFilter = ({ posts, onFilterChange }) => {
               value={selectedDate}
               onChange={handleDateChange}
               className="date-input"
-              placeholder="dd-mm-yyyy"
             />
             <Calendar size={18} className="calendar-icon" />
           </div>
         </div>
       </div>
 
+      {/* Message when no tags exist */}
       {allTags.length === 0 && posts.length > 0 && (
-        <p className="no-tags-message">No tags available. Add tags when creating posts!</p>
+        <p className="no-tags-message">
+          No tags available. Add tags when creating posts!
+        </p>
       )}
     </div>
   );
 };
 
 export default TagFilter;
-
